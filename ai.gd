@@ -1,23 +1,22 @@
 class_name AIController
 extends CharacterBody3D
 
-@export var walk_speed : float = 1.0
-@export var run_speed : float = 2.5
+@export var walk_speed : float = 2.0
+@export var run_speed : float = 5.5
 @export var rotation_speed : float = 5.0
 @export var vision_range : float = 10.0
 @export var vision_angle : float = 45.0
-@export var lose_player_delay : float = 1.0  # Time before stopping tracking after losing sight
+@export var lose_player_delay : float = 1.0
 @export var chase_update_interval : float = 0.2
+@export var attack_distance : float = 1.5
 
 var is_running : bool = false
 var is_stopped : bool = true
 var look_at_player : bool = false
-var move_direction : Vector3 
-var target_y_rot : float
 var player_in_range : bool = false
-var time_since_lost_sight : float = 0.0  # Timer for tracking delay
-var player_was_in_cone : bool = false  # Track if player was recently visible
-var time_since_path_update : float = 0.0  # Timer for path updates
+var time_since_lost_sight : float = 0.0
+var player_was_in_cone : bool = false
+var time_since_path_update : float = 0.0
 
 @onready var agent : NavigationAgent3D = get_node("NavigationAgent3D")
 @onready var gravity : float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -25,7 +24,7 @@ var time_since_path_update : float = 0.0  # Timer for path updates
 @onready var vision_area : Area3D = $Area3D
 
 @export var show_vision_area : bool = true
-@export var vision_color : Color = Color(1.0, 0.0, 0.0, 0.5)  # Red with 50% opacity
+@export var vision_color : Color = Color(1.0, 0.0, 0.0, 0.5)
 @onready var vision_collision : CollisionShape3D = $Area3D/CollisionShape3D
 @onready var vision_visual : MeshInstance3D
 
@@ -42,89 +41,49 @@ func _ready():
 		create_vision_visual_from_collision()
 		
 	if agent:
+		# Configure NavigationAgent3D for chasing
 		agent.path_desired_distance = 0.5
-		agent.target_desired_distance = 1.0
+		agent.target_desired_distance = attack_distance
 		agent.path_max_distance = 1.0
-		agent.avoidance_enabled = false
+		agent.avoidance_enabled = true
 		agent.max_speed = run_speed
 		
-
-func create_vision_visual_from_collision():
-	# Create a MeshInstance3D that matches the collision shape
-	vision_visual = MeshInstance3D.new()
-	vision_collision.add_child(vision_visual)  # Add as child to follow the collision shape
-	
-	# Get the shape from the CollisionShape3D
-	var shape = vision_collision.shape
-	
-	# Create a mesh that matches the collision shape
-	if shape is SphereShape3D:
-		var sphere_mesh = SphereMesh.new()
-		sphere_mesh.radius = shape.radius
-		sphere_mesh.height = shape.radius * 2
-		vision_visual.mesh = sphere_mesh
+		# Debug navigation
+		agent.debug_enabled = true
+		agent.navigation_finished.connect(_on_navigation_finished)
 		
-	elif shape is BoxShape3D:
-		var box_mesh = BoxMesh.new()
-		box_mesh.size = shape.size
-		vision_visual.mesh = box_mesh
+		# Wait a frame to ensure navigation map is ready
+		await get_tree().process_frame
 		
-	elif shape is CylinderShape3D:
-		var cylinder_mesh = CylinderMesh.new()
-		cylinder_mesh.height = shape.height
-		cylinder_mesh.top_radius = shape.radius
-		cylinder_mesh.bottom_radius = shape.radius
-		vision_visual.mesh = cylinder_mesh
-		
-	elif shape is CapsuleShape3D:
-		var capsule_mesh = CapsuleMesh.new()
-		capsule_mesh.radius = shape.radius
-		capsule_mesh.height = shape.height
-		vision_visual.mesh = capsule_mesh
-	
-	# Create and apply semi-transparent material
-	var material = StandardMaterial3D.new()
-	material.albedo_color = vision_color
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED  # Show both sides
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED  # Unlit
-	material.no_depth_test = false  # makes it not visible through walls
-	
-	vision_visual.material_override = material
-
-# Change color when tracking
-func update_vision_color(tracking: bool):
-	if vision_visual and vision_visual.material_override:
-		if tracking:
-			vision_visual.material_override.albedo_color = Color(1.0, 1.0, 0.0, 0.2)  # Yellow when tracking
-		else:
-			vision_visual.material_override.albedo_color = Color(1.0, 0.0, 0.0, 0.2)  # Red when idle
+		print("Navigation agent ready. Debug enabled: ", agent.debug_enabled)
 
 func _process(delta):
 	if player != null:
 		player_distance = position.distance_to(player.position)
 		
 		if player_in_range:
-			# Player is in the area
 			if not player_was_in_cone:
-				# Check if we can initially spot the player (vision cone check)
 				if is_player_in_vision_cone():
-					# Start tracking
+					# Start tracking and chasing
 					player_was_in_cone = true
+					is_chasing = true
 					time_since_lost_sight = 0.0
 					update_vision_color(true)
-					print("Enemy spotted player! Starting chase!") # Debug
+					print("Enemy spotted player! Starting chase!")
 			
-			# If we're tracking (either just started or already tracking)
 			if player_was_in_cone:
+				# Active chasing behavior
 				look_at_player = true
 				is_running = true
 				is_stopped = false
+				is_chasing = true
 				last_known_player_position = player.position
+				
+				# Update path periodically
 				time_since_path_update += delta
 				if time_since_path_update >= chase_update_interval:
-					move_to_position(player.position)
-					time_since_path_update = 0.0 # Continuously update target position
+					update_chase_path()
+					time_since_path_update = 0.0
 					
 				time_since_lost_sight = 0.0
 		else:
@@ -133,61 +92,108 @@ func _process(delta):
 				time_since_lost_sight += delta
 				
 				if time_since_lost_sight < lose_player_delay:
-					# Still within grace period - continue tracking last known position
+					# Continue chasing to last known position
 					look_at_player = true
 					is_running = true
 					is_stopped = false
-					if last_known_player_position:
-						move_to_position(last_known_player_position)
-					
-					print("Lost sight! Chasing for ", lose_player_delay - time_since_lost_sight, " more seconds")  # Debug
+					is_chasing = true
 				else:
-					# Grace period expired - stop tracking
-					print("Lost player completely. Stopping chase.")  # Debug
-					look_at_player = false
-					is_running = false
-					player_was_in_cone = false
-					time_since_lost_sight = 0.0
-					update_vision_color(false) 
+					# Stop chasing
+					stop_chasing()
 			else:
-				# Not tracking
-				look_at_player = false
-				is_running = false
+				# Not tracking at all
+				if is_chasing:
+					stop_chasing()
+
+func update_chase_path():
+	if player == null:
+		return
+		
+	# Check if we're close enough to attack
+	if player_distance <= attack_distance:
+		print("In attack range!")
+		is_stopped = true
+		return
+	is_stopped = false
+	
+	# Update navigation target to player position
+	agent.target_position = player.position
+	
+	# Force path recalculation
+	agent.set_target_position(player.position)
+
+func stop_chasing():
+	look_at_player = false
+	is_running = false
+	is_stopped = true
+	is_chasing = false
+	player_was_in_cone = false
+	time_since_lost_sight = 0.0
+	update_vision_color(false)
 
 func _physics_process(delta):
+	# Apply gravity
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-		
-	# Only move if we have a valid path
-	if not agent.is_navigation_finished() and not is_stopped:
-		var target_pos = agent.get_next_path_position()
-		var move_dir = position.direction_to(target_pos)
-		move_dir.y = 0
-		move_dir = move_dir.normalized()
-		
-		# Use appropriate speed
-		var current_speed = walk_speed
-		if is_running:
-			current_speed = run_speed
-		
-		velocity.x = move_dir.x * current_speed
-		velocity.z = move_dir.z * current_speed
 	else:
-		# Stop movement when navigation is finished or stopped
+		velocity.y = 0
+	
+	# Movement logic
+	if is_chasing and not is_stopped and agent and player:
+		# Make sure we have a target
+		if agent.is_navigation_finished():
+			# Try to set a new target if we've finished
+			agent.target_position = player.position
+		
+		# Get the next position in the path
+		var next_path_position = agent.get_next_path_position()
+		var direction = (next_path_position - global_position).normalized()
+		var horizontal_direction = Vector3(direction.x, 0, direction.z)
+
+		
+		if horizontal_direction.length() < 0.1 or not agent.is_target_reachable():
+			print("Navigation failed! Using direct movement to player")
+			var direct_direction = (player.global_position - global_position)
+			direct_direction.y = 0
+			horizontal_direction = direct_direction.normalized()
+		else:
+			horizontal_direction = horizontal_direction.normalized()
+		
+		# Apply movement speed
+		var current_speed = run_speed if is_running else walk_speed
+		
+		# Set velocity (only horizontal)
+		velocity.x = horizontal_direction.x * current_speed
+		velocity.z = horizontal_direction.z * current_speed
+		
+	else:
+		# Stop horizontal movement when not chasing
 		velocity.x = 0
 		velocity.z = 0
 	
+	# Apply movement
 	move_and_slide()
 	
+	# Rotation logic
 	if look_at_player and player != null:
-		var player_dir = player.position - position
-		target_y_rot = atan2(player_dir.x, player_dir.z)
-	elif velocity.length() > 0.1:
-		target_y_rot = atan2(velocity.x, velocity.z)
-	
-	var visual_rotation = target_y_rot + deg_to_rad(180)
-	rotation.y = lerp_angle(rotation.y, visual_rotation, rotation_speed * delta)
+		var look_direction = (player.position - position).normalized()
+		look_direction.y = 0
+		if look_direction.length() > 0:
+			var target_rot = atan2(look_direction.x, look_direction.z)
+			rotation.y = lerp_angle(rotation.y, target_rot + deg_to_rad(180), rotation_speed * delta)
+	elif velocity.length_squared() > 0.1:
+		# Face movement direction when moving
+		var target_rot = atan2(velocity.x, velocity.z)
+		rotation.y = lerp_angle(rotation.y, target_rot + deg_to_rad(180), rotation_speed * delta)
 
+func _on_navigation_finished():
+	print("Navigation finished!")
+	if is_chasing and player_was_in_cone and player:
+		# Immediately set a new target
+		agent.target_position = player.position
+		print("Setting new target after reaching destination")
+
+# Check if player is in vision cone
 func is_player_in_vision_cone() -> bool:
 	if player == null:
 		return false
@@ -208,23 +214,52 @@ func is_player_in_vision_cone() -> bool:
 func _on_body_entered(body):
 	if body.is_in_group("Player"):
 		player_in_range = true
+		print("Player entered vision area")
 
 func _on_body_exited(body):
 	if body.is_in_group("Player"):
 		player_in_range = false
-		# Start the grace period timer instead of immediately stopping
+		print("Player exited vision area")
 
-func move_to_position(to_position: Vector3, adjust_pos : bool = true):
-	if not agent:
-		agent = get_node("NavigationAgent3D")
+func create_vision_visual_from_collision():
+	vision_visual = MeshInstance3D.new()
+	vision_collision.add_child(vision_visual)
 	
-	is_stopped = false
+	var shape = vision_collision.shape
 	
-	if adjust_pos:
-		var map = get_world_3d().navigation_map
-		var adjusted_pos = NavigationServer3D.map_get_closest_point(map, to_position)
-		agent.target_position = adjusted_pos
-		print("Set navigation target to: ", adjusted_pos)
-	else:
-		agent.target_position = to_position
-		print("Set navigation target to: ", to_position)
+	if shape is SphereShape3D:
+		var sphere_mesh = SphereMesh.new()
+		sphere_mesh.radius = shape.radius
+		sphere_mesh.height = shape.radius * 2
+		vision_visual.mesh = sphere_mesh
+	elif shape is BoxShape3D:
+		var box_mesh = BoxMesh.new()
+		box_mesh.size = shape.size
+		vision_visual.mesh = box_mesh
+	elif shape is CylinderShape3D:
+		var cylinder_mesh = CylinderMesh.new()
+		cylinder_mesh.height = shape.height
+		cylinder_mesh.top_radius = shape.radius
+		cylinder_mesh.bottom_radius = shape.radius
+		vision_visual.mesh = cylinder_mesh
+	elif shape is CapsuleShape3D:
+		var capsule_mesh = CapsuleMesh.new()
+		capsule_mesh.radius = shape.radius
+		capsule_mesh.height = shape.height
+		vision_visual.mesh = capsule_mesh
+	
+	var material = StandardMaterial3D.new()
+	material.albedo_color = vision_color
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.no_depth_test = false
+	
+	vision_visual.material_override = material
+
+func update_vision_color(tracking: bool):
+	if vision_visual and vision_visual.material_override:
+		if tracking:
+			vision_visual.material_override.albedo_color = Color(1.0, 1.0, 0.0, 0.2)
+		else:
+			vision_visual.material_override.albedo_color = Color(1.0, 0.0, 0.0, 0.2)
