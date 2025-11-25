@@ -115,6 +115,7 @@ func update_chase_path():
 		print("In attack range!")
 		emit_signal("player_caught")
 		is_stopped = true
+		is_chasing = false
 		return
 	is_stopped = false
 	
