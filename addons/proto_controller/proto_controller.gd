@@ -102,29 +102,35 @@ func _physics_process(delta: float) -> void:
 	else:
 		move_speed = base_speed
 
-	# Apply desired movement to velocity
 # Apply desired movement to velocity
 	if can_move:
 		var input_dir := Input.get_vector(input_left, input_right, input_forward, input_back)
 		var move_dir := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		
 		if move_dir:
 			velocity.x = move_dir.x * move_speed
 			velocity.z = move_dir.z * move_speed
-			
-			if is_on_floor() and not footstep_player.playing:
-				footstep_player.play()
 		else:
 			velocity.x = move_toward(velocity.x, 0, move_speed)
 			velocity.z = move_toward(velocity.z, 0, move_speed)
-			
-			if footstep_player.playing:
-				footstep_player.stop()
 	else:
 		velocity.x = 0
 		velocity.y = 0
 	
 	# Use velocity to actually move
 	move_and_slide()
+	
+	# NOW check footsteps after physics update
+	print("On floor: ", is_on_floor(), " | Velocity: ", velocity.length())
+	
+	var is_moving = velocity.length() > 0.1  # Check if actually moving
+	
+	if is_moving and is_on_floor():
+		if not footstep_player.playing:
+			footstep_player.play()
+	else:
+		if footstep_player.playing:
+			footstep_player.stop()
 
 
 ## Rotate us to look around.
