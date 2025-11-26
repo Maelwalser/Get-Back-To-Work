@@ -5,6 +5,11 @@
 
 extends CharacterBody3D
 
+## Was player in air previously?
+@export var was_on_floor : bool = false
+##Was player on the ground previously?
+@export var was_in_air : bool = false
+
 ## Can we move around?
 @export var can_move : bool = true
 ## Are we affected by gravity?
@@ -53,6 +58,7 @@ var freeflying : bool = false
 @onready var head: Node3D = $Head
 @onready var collider: CollisionShape3D = $Collider
 @onready var footstep_player: AudioStreamPlayer3D = $FootstepPlayer
+@onready var jump_landing_player: AudioStreamPlayer3D = $JumpLandingPlayer
 
 func _ready() -> void:
 	check_input_mappings()
@@ -90,11 +96,15 @@ func _physics_process(delta: float) -> void:
 	if has_gravity:
 		if not is_on_floor():
 			velocity += get_gravity() * delta
+			jump_landing_player.play()
+			
 
 	# Apply jumping
 	if can_jump:
 		if Input.is_action_just_pressed(input_jump) and is_on_floor():
 			velocity.y = jump_velocity
+			
+			
 
 	# Modify speed based on sprinting
 	if can_sprint and Input.is_action_pressed(input_sprint):
@@ -120,17 +130,22 @@ func _physics_process(delta: float) -> void:
 	# Use velocity to actually move
 	move_and_slide()
 	
-	# NOW check footsteps after physics update
-	print("On floor: ", is_on_floor(), " | Velocity: ", velocity.length())
+	##check last vertical position to evaluate jump sound logic
+	if was_in_air and is_on_floor():
+		jump_landing_player.play()
+		
 	
-	var is_moving = velocity.length() > 0.1  # Check if actually moving
+		
+	var is_moving = velocity.length() > 0.1  
 	
 	if is_moving and is_on_floor():
 		if not footstep_player.playing:
 			footstep_player.play()
+			
 	else:
 		if footstep_player.playing:
 			footstep_player.stop()
+			
 
 
 ## Rotate us to look around.
