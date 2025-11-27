@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://cpfyp1gqs6j0d"]
+[gd_scene format=3 uid="uid://blqg83qk728j5"]
 
 [node name="DestructibleObject" type="RigidBody3D"]
 
