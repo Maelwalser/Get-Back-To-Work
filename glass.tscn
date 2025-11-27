@@ -9,10 +9,10 @@
 [node name="DestructibleObject" instance=ExtResource("1_fvmfx")]
 
 [node name="Sketchfab_Scene" parent="Node3D" index="0" instance=ExtResource("2_ykn3o")]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, 0, 0)
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
 [node name="CollisionShape3D" parent="." index="1"]
-transform = Transform3D(0.1, 0, 0, 0, 0.09, 0, 0, 0, 0.1, 0, 0.10359, 0)
+transform = Transform3D(0.3, 0, 0, 0, 0.221, 0, 0, 0, 0.3, 0, 0.2536854, 0)
 shape = SubResource("CylinderShape3D_b8qbv")
 
 [node name="AudioStreamPlayer3D" parent="." index="2"]
