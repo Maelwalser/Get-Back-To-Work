@@ -10,6 +10,8 @@ class_name DestructibleObject
 @onready var model = $Model
 @onready var collision_shape = $CollisionShape3D
 
+
+
 var is_destroyed: bool = false
 
 func _ready():
@@ -56,5 +58,8 @@ func destroy():
 	
 	# Wait for animation/sound to finish before removing
 	await get_tree().create_timer(0.5).timeout
+	
+	print("Loaded scene: ", scene_file_path)
+	print("Sound assigned? ", destruction_sound)
 	
 	queue_free()
