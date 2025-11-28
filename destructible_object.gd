@@ -62,4 +62,22 @@ func destroy():
 	print("Loaded scene: ", scene_file_path)
 	print("Sound assigned? ", destruction_sound)
 	
+	# Play destruction sound
+	if destruction_sound and audio_player:
+		print("DEBUG: Audio bus: ", audio_player.bus)
+		print("DEBUG: Max distance: ", audio_player.max_distance)
+		print("DEBUG: Unit size: ", audio_player.unit_size)
+		print("DEBUG: Attenuation model: ", audio_player.attenuation_model)
+		print("DEBUG: Volume dB: ", audio_player.volume_db)
+		print("DEBUG: Global position: ", audio_player.global_position)
+		print("DEBUG: Camera/Listener distance: ", audio_player.global_position.distance_to(get_viewport().get_camera_3d().global_position))
+		
+		audio_player.stream = destruction_sound
+		audio_player.play()
+		print("DEBUG: Is playing? ", audio_player.playing)
+		
+		# Check again after a frame
+		await get_tree().process_frame
+		print("DEBUG: Still playing after frame? ", audio_player.playing)
+	
 	queue_free()
