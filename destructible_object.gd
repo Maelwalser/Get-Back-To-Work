@@ -10,8 +10,6 @@ class_name DestructibleObject
 @onready var model = $Model
 @onready var collision_shape = $CollisionShape3D
 
-
-
 var is_destroyed: bool = false
 
 func _ready():
@@ -34,21 +32,10 @@ func destroy():
 	# Disable collision
 	collision_shape.disabled = true
 	
-	# Debug: Check sound and audio player
-	print("DEBUG: destruction_sound is null? ", destruction_sound == null)
-	print("DEBUG: audio_player is null? ", audio_player == null)
-	if destruction_sound:
-		print("DEBUG: destruction_sound path: ", destruction_sound.resource_path)
-	if audio_player:
-		print("DEBUG: audio_player exists, stream before assignment: ", audio_player.stream)
-	
 	# Play destruction sound
 	if destruction_sound and audio_player:
 		audio_player.stream = destruction_sound
 		audio_player.play()
-		print("DEBUG: Sound should be playing now!")
-	else:
-		print("DEBUG: Sound NOT played - condition failed!")
 	
 	# Simple destruction effect - shrink and spin
 	var tween = create_tween()
@@ -58,26 +45,5 @@ func destroy():
 	
 	# Wait for animation/sound to finish before removing
 	await get_tree().create_timer(0.5).timeout
-	
-	print("Loaded scene: ", scene_file_path)
-	print("Sound assigned? ", destruction_sound)
-	
-	# Play destruction sound
-	if destruction_sound and audio_player:
-		print("DEBUG: Audio bus: ", audio_player.bus)
-		print("DEBUG: Max distance: ", audio_player.max_distance)
-		print("DEBUG: Unit size: ", audio_player.unit_size)
-		print("DEBUG: Attenuation model: ", audio_player.attenuation_model)
-		print("DEBUG: Volume dB: ", audio_player.volume_db)
-		print("DEBUG: Global position: ", audio_player.global_position)
-		print("DEBUG: Camera/Listener distance: ", audio_player.global_position.distance_to(get_viewport().get_camera_3d().global_position))
-		
-		audio_player.stream = destruction_sound
-		audio_player.play()
-		print("DEBUG: Is playing? ", audio_player.playing)
-		
-		# Check again after a frame
-		await get_tree().process_frame
-		print("DEBUG: Still playing after frame? ", audio_player.playing)
 	
 	queue_free()
