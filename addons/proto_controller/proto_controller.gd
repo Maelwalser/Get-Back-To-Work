@@ -44,6 +44,8 @@ extends CharacterBody3D
 ## Name of Input Action to toggle freefly mode.
 @export var input_freefly : String = "freefly"
 
+@onready var knuckles_label = $CanvasGroup/Label
+
 var mouse_captured : bool = false
 var look_rotation : Vector2
 var move_speed : float = 0.0
@@ -57,6 +59,11 @@ func _ready() -> void:
 	check_input_mappings()
 	look_rotation.y = rotation.y
 	look_rotation.x = head.rotation.x
+	
+	# Setup label position and style
+	if knuckles_label:
+		knuckles_label.position = Vector2(10, 10)  # Top left corner
+		knuckles_label.add_theme_font_size_override("font_size", 32)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Mouse capturing
@@ -151,6 +158,11 @@ func release_mouse():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	mouse_captured = false
 
+
+func _process(delta):
+	# Update label text every frame with global counter
+	if knuckles_label:
+		knuckles_label.text = "Knuckles: " + str(GameManager.knuckles) + "/9"
 
 ## Checks if some Input Actions haven't been created.
 ## Disables functionality accordingly.

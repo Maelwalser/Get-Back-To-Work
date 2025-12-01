@@ -9,6 +9,9 @@ enum GameState { MENU, PLAYING, PAUSED, GAME_OVER }
 var current_state : GameState = GameState.MENU
 var game_over_ui : CanvasLayer = null
 
+# Global Knuckles counter
+var knuckles = 0
+
 @export var main_menu_path : String = "res://scenes/ui/main_menu.tscn"
 @export var game_scene_path : String = "res://main.tscn"
 
