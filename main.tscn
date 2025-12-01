@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cg6uoenyk5rbv" path="res://addons/assets/partition-wall/wand2.glb" id="5_qxjar"]
 [ext_resource type="PackedScene" uid="uid://dxt1j4kf1m6ju" path="res://addons/assets/mouse/scene.gltf" id="6_03hpv"]
 [ext_resource type="PackedScene" uid="uid://by1cnj58ptphl" path="res://addons/assets/monitor/scene.gltf" id="7_5ll24"]
-[ext_resource type="PackedScene" uid="uid://dj478lmy7vnfu" path="res://mainmain.tscn" id="8_5vw27"]
+[ext_resource type="PackedScene" uid="uid://dsotllufni8ku" path="res://mainmain.tscn" id="8_5vw27"]
 [ext_resource type="PackedScene" uid="uid://bn5ywfhau3dey" path="res://addons/assets/table/table.glb" id="8_nax5o"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7dm0k"]
@@ -82,4 +82,6 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -36.1928, 0, 110.396)
 [node name="table" parent="." instance=ExtResource("8_nax5o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.8487, 0, 109.107)
 
-[node name="Office" parent="." instance=ExtResource("8_5vw27")]
+[node name="office" parent="." instance=ExtResource("8_5vw27")]
+
+[node name="destructibles" type="Node3D" parent="."]
