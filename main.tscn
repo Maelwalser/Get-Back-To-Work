@@ -59,6 +59,8 @@ script = ExtResource("24_0odxb")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="Haru"]
 path_height_offset = 1.0
+avoidance_enabled = true
+radius = 2.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Haru"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05810547, 0.42825317, 0.0009765625)
@@ -336,6 +338,8 @@ script = ExtResource("26_a6jrf")
 [node name="Moritz" parent="Moritz" instance=ExtResource("4_lswn8")]
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="Moritz"]
+avoidance_enabled = true
+radius = 2.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Moritz"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00793457, 0.36227417, -0.005630493)
