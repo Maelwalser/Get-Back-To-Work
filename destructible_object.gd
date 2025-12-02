@@ -42,6 +42,8 @@ func destroy():
 	is_destroyed = true
 	collision_shape.disabled = true
 	
+	DestructionManager.add_destruction()
+	
 	if particles:
 		particles.emitting = true
 

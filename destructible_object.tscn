@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://blqg83qk728j5"]
 
-[ext_resource type="Script" uid="uid://dl0bulndtybw0" path="res://destructible_object.gd" id="1_3jcet"]
+[ext_resource type="Script" path="res://destructible_object.gd" id="1_3jcet"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3jcet"]
 emission_shape = 1

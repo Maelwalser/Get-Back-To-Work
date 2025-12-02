@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://xcu7i15vs647"]
+[gd_scene load_steps=16 format=3 uid="uid://xcu7i15vs647"]
 
 [ext_resource type="PackedScene" uid="uid://bs72ogkvdd7d6" path="res://addons/proto_controller/proto_controller.tscn" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://dbjqd470eqn2r" path="res://ai.gd" id="2_0xm2m"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://by1cnj58ptphl" path="res://addons/assets/monitor/scene.gltf" id="7_5ll24"]
 [ext_resource type="PackedScene" uid="uid://dsotllufni8ku" path="res://mainmain.tscn" id="8_5vw27"]
 [ext_resource type="PackedScene" uid="uid://bn5ywfhau3dey" path="res://addons/assets/table/table.glb" id="8_nax5o"]
+[ext_resource type="PackedScene" uid="uid://chvaa1hp72wjj" path="res://scenes/ui/destruction_counter.tscn" id="9_kek77"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7dm0k"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -85,3 +86,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.8487, 0, 109.107)
 [node name="office" parent="." instance=ExtResource("8_5vw27")]
 
 [node name="destructibles" type="Node3D" parent="."]
+
+[node name="Control" parent="." instance=ExtResource("9_kek77")]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_bottom = 0.0
+offset_left = -175.0
+offset_bottom = 75.0
+grow_horizontal = 0
+grow_vertical = 1
