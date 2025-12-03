@@ -2,12 +2,12 @@ class_name AIControllerMoritz
 extends CharacterBody3D
 signal player_caught
 
-@export var walk_speed : float = 2.0
-@export var run_speed : float = 5.5
+@export var walk_speed : float = 3.0
+@export var run_speed : float = 6.0
 @export var rotation_speed : float = 5.0
 @export var vision_range : float = 10.0
 @export var vision_angle : float = 45.0
-@export var lose_player_delay : float = 1.0
+@export var lose_player_delay : float = 5.0
 @export var chase_update_interval : float = 0.2
 @export var attack_distance : float = 2.0
 
@@ -45,11 +45,14 @@ func _ready():
 		create_vision_visual_from_collision()
 		
 	if agent:
-		agent.path_desired_distance = 0.5
+		agent.path_desired_distance = 1.5
 		agent.target_desired_distance = attack_distance
 		agent.path_max_distance = 1.0
+		agent.radius = 2.0
+		
 		agent.avoidance_enabled = true
 		agent.max_speed = run_speed
+		agent.velocity_computed.connect(_on_velocity_computed)
 		agent.debug_enabled = true
 		agent.navigation_finished.connect(_on_navigation_finished)
 		
@@ -126,32 +129,42 @@ func _physics_process(delta):
 	else:
 		velocity.y = 0
 	
+	# MOVEMENT LOGIC
 	if is_chasing and not is_stopped and agent and player:
 		if agent.is_navigation_finished():
-			agent.target_position = player.global_position 
-		
-		var next_path_position = agent.get_next_path_position()
-		var direction = (next_path_position - global_position).normalized()
-		var horizontal_direction = Vector3(direction.x, 0, direction.z)
-		
-		if horizontal_direction.length() < 0.1 or not agent.is_target_reachable():
-			# Fallback movement using global positions
-			var direct_direction = (player.global_position - global_position)
-			direct_direction.y = 0
-			horizontal_direction = direct_direction.normalized()
+			# Slow down to a stop if finished
+			var current_vel = velocity
+			current_vel.x = move_toward(current_vel.x, 0, run_speed * delta)
+			current_vel.z = move_toward(current_vel.z, 0, run_speed * delta)
+			if agent.avoidance_enabled:
+				agent.set_velocity(current_vel)
+			else:
+				_on_velocity_computed(current_vel)
 		else:
-			horizontal_direction = horizontal_direction.normalized()
-		
-		var current_speed = run_speed if is_running else walk_speed
-		
-		velocity.x = horizontal_direction.x * current_speed
-		velocity.z = horizontal_direction.z * current_speed
+			var next_path_position = agent.get_next_path_position()
+			var direction = global_position.direction_to(next_path_position)
+			
+			var current_speed = run_speed if is_running else walk_speed
+			var intended_velocity = direction * current_speed
+			
+			# SEND VELOCITY TO AGENT FOR AVOIDANCE CALCULATION
+			if agent.avoidance_enabled:
+				agent.set_velocity(intended_velocity)
+			else:
+				_on_velocity_computed(intended_velocity)
 		
 	else:
-		velocity.x = 0
-		velocity.z = 0
-	
-	move_and_slide()
+		# Not chasing - Decelerate
+		var current_vel = velocity
+		current_vel.x = move_toward(current_vel.x, 0, run_speed * delta)
+		current_vel.z = move_toward(current_vel.z, 0, run_speed * delta)
+		# Still update agent so it knows we are stopping (helps other agents avoid us)
+		if agent.avoidance_enabled:
+			agent.set_velocity(current_vel)
+		else:
+			_on_velocity_computed(current_vel)
+			
+			
 	if anim_player:
 		var horizontal_speed = Vector3(velocity.x, 0, velocity.z).length()
 	
@@ -164,16 +177,32 @@ func _physics_process(delta):
 			if anim_player.is_playing():
 				anim_player.stop()
 	
-	# Rotation Logic (Maintained your preferred orientation)
+# 	ROTATION LOGIC
 	if look_at_player and player != null:
-		var look_direction = (player.global_position - global_position).normalized()
+		# Prioritize looking at player when very close
+		var look_target = player.global_position
+		
+		# If chasing but far away, look at the path node to avoid "strafing" into walls
+		if is_chasing and player_distance > attack_distance * 1.5:
+			look_target = agent.get_next_path_position()
+			
+		var look_direction = (look_target - global_position).normalized()
 		look_direction.y = 0
 		if look_direction.length() > 0:
+			# Maintained your inverted atan2 logic
 			var target_rot = atan2(-look_direction.x, -look_direction.z)
 			rotation.y = lerp_angle(rotation.y, target_rot, rotation_speed * delta)
+			
 	elif velocity.length_squared() > 0.1:
+		# Look in direction of movement
 		var target_rot = atan2(-velocity.x, -velocity.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, rotation_speed * delta)
+
+func _on_velocity_computed(safe_velocity: Vector3):
+	velocity.x = safe_velocity.x
+	velocity.z = safe_velocity.z
+	move_and_slide()
+
 
 func _on_navigation_finished():
 	if is_chasing and player_was_in_cone and player:
