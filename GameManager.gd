@@ -11,8 +11,8 @@ var current_state : GameState = GameState.MENU
 var game_over_ui : CanvasLayer = null
 var game_won_ui : Control = null
 
-
-@export var win_threshold: int = 20
+#change this to the goal needed to win
+@export var win_threshold: int = 5
 
 @export var main_menu_path : String = "res://scenes/ui/main_menu.tscn"
 @export var game_scene_path : String = "res://main.tscn"
@@ -62,6 +62,8 @@ func setup_game_won_ui():
 		get_tree().root.call_deferred("add_child", game_won_ui)
 		game_won_ui.hide()
 		
+		
+
 func _on_destruction_count_changed(count: int):
 	if count >= win_threshold and current_state == GameState.PLAYING:
 		trigger_victory()
@@ -85,11 +87,16 @@ func trigger_game_over():
 	get_tree().paused = true
 	
 func trigger_victory():
+	print("TRIGGERING VICTORY!") # Delete!
 	current_state = GameState.VICTORY
 	emit_signal("game_won")
 	
+	print("game_won_ui exists: ", game_won_ui != null)  # Delete!
 	if game_won_ui:
+		print("Calling show_victory()")  # Delete!
 		game_won_ui.show_victory()
+	else:
+		print("ERROR: game_won_ui is null!")  # Delete!
 		
 	get_tree().paused = true
 
@@ -145,11 +152,24 @@ func start_game():
 	connect_to_enemies()
 	setup_game_over_ui()
 	setup_game_won_ui()
+	
+	DestructionManager.destruction_count_changed.connect(_on_destruction_count_changed)
 
 func pause_game():
 	if current_state == GameState.PLAYING:
 		current_state = GameState.PAUSED
 		get_tree().paused = true
+	
+	
+	
+	
+	
+#Delete this!!!!!		
+func _input(event):
+	# Press T to test victory manually
+	if event.is_action_pressed("ui_text_completion_accept") or Input.is_key_pressed(KEY_T):
+		print("Manual test: calling _on_destruction_count_changed(99)")
+		_on_destruction_count_changed(99)
 
 func resume_game():
 	if current_state == GameState.PAUSED:

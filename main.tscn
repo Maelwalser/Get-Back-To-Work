@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://xcu7i15vs647"]
+[gd_scene load_steps=39 format=3 uid="uid://xcu7i15vs647"]
 
 [ext_resource type="PackedScene" path="res://office-with-mesh.tscn" id="2_n7cui"]
 [ext_resource type="PackedScene" uid="uid://bs72ogkvdd7d6" path="res://addons/proto_controller/proto_controller.tscn" id="2_q5j75"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://ccigr2p604ft7" path="res://nodes/ceo-island.tscn" id="7_nwlo3"]
 [ext_resource type="PackedScene" uid="uid://cdutr0hemgiic" path="res://nodes/one-workplace.tscn" id="8_fprb5"]
 [ext_resource type="PackedScene" uid="uid://nnw02k8j2e7l" path="res://nodes/table.tscn" id="9_fcn4g"]
+[ext_resource type="PackedScene" uid="uid://bjpmkecvyr11s" path="res://scenes/ui/destruction_counter.tscn" id="9_kek77"]
 [ext_resource type="PackedScene" uid="uid://0kb6ko8o0oei" path="res://nodes/lamp.tscn" id="10_6mct3"]
 [ext_resource type="PackedScene" uid="uid://7eyrthvxhcti" path="res://addons/assets/shelf-kallax/scene.gltf" id="11_nhmae"]
 [ext_resource type="PackedScene" uid="uid://c4kl1jdet37qo" path="res://nodes/kallax.tscn" id="13_7axiy"]
@@ -29,7 +30,7 @@
 [ext_resource type="Script" uid="uid://bejm03qx5154w" path="res://MoritzAI.gd" id="26_a6jrf"]
 [ext_resource type="PackedScene" uid="uid://bh2yhlp1aoa3g" path="res://monitor.tscn" id="26_xuqvo"]
 [ext_resource type="PackedScene" uid="uid://c2yv7wgko4llv" path="res://glass.tscn" id="27_kq58d"]
-[ext_resource type="PackedScene" path="res://coffe_mug.tscn" id="28_seu75"]
+[ext_resource type="PackedScene" uid="uid://cjrrv4f5vwytu" path="res://coffe_mug.tscn" id="28_seu75"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qsp4k"]
 radius = 0.12695313
@@ -354,14 +355,65 @@ transform = Transform3D(27.9927, 0, -25.4687, 0, 37.845, 0, 25.4687, 0, 27.9927,
 
 [node name="Destructibles" type="Node3D" parent="NavigationRegion3D"]
 
+[node name="Mug1" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.402268, 6.0668383, -1.2270824)
+
+[node name="Mug2" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7013497, 6.0583987, -4.104852)
+
+[node name="Mug 3" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9473038, 5.991582, -4.0545707)
+
+[node name="Mug4" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.030975, 6.0092797, 3.871369)
+
+[node name="Mug5" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.803913, 6.0179367, 2.4792745)
+
+[node name="Mug6" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.66098, 6.0134845, -32.369446)
+
+[node name="Glass1" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.323887, 5.873507, -23.711058)
+
+[node name="Glass2" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.504223, 5.889374, -31.197021)
+
+[node name="Glass3" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.688213, 5.8966293, -1.6116688)
+
+[node name="Glass4" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.758514, 5.8911033, 3.2149408)
+
+[node name="Glass5" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.07916, 5.8937483, 0)
+
+[node name="Monitor1" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(-0.258819, 0, 0.96592575, 0, 1, 0, -0.96592575, 0, -0.258819, -0.18303621, 5.7607555, 1.0544485)
+
 [node name="DestructibleObject" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.63873, 4.1185184, -22.267143)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.969132, 4.785956, -7.431961)
 
-[node name="DestructibleObject2" parent="NavigationRegion3D/Destructibles" instance=ExtResource("27_kq58d")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.01459, 4.261977, -20.692036)
+[node name="DestructibleObject2" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0183082, 4.653852, -6.704687)
 
-[node name="DestructibleObject3" parent="NavigationRegion3D/Destructibles" instance=ExtResource("28_seu75")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.40701, 4.48821, -21.461538)
+[node name="DestructibleObject3" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8581753, 4.5046334, -6.179884)
+
+[node name="DestructibleObject4" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8581753, 4.5046334, -7.152731)
+
+[node name="DestructibleObject5" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8581753, 4.5046334, -8.527449)
+
+[node name="DestructibleObject6" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.870821, 4.5046334, -6.179884)
+
+[node name="DestructibleObject7" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.190584, 4.5046334, -8.001729)
+
+[node name="DestructibleObject8" parent="NavigationRegion3D/Destructibles" instance=ExtResource("26_xuqvo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.4067807, 4.5046334, -6.815319)
 
 [node name="Moritz" type="CharacterBody3D" parent="." node_paths=PackedStringArray("patrol_path") groups=["Enemy"]]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 2.431693, 5.089832, -6.180725)
@@ -393,3 +445,5 @@ curve = SubResource("Curve3D_a6jrf")
 [node name="HaruPath" type="Path3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.53912, 5.703068, -5.0959177)
 curve = SubResource("Curve3D_xuqvo")
+
+[node name="DestructionCounter" parent="." instance=ExtResource("9_kek77")]
