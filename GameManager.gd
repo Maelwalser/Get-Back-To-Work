@@ -87,17 +87,13 @@ func trigger_game_over():
 	get_tree().paused = true
 	
 func trigger_victory():
-	print("TRIGGERING VICTORY!") # Delete!
 	current_state = GameState.VICTORY
 	emit_signal("game_won")
-	
-	print("game_won_ui exists: ", game_won_ui != null)  # Delete!
+	await get_tree().create_timer(0.5).timeout
+
 	if game_won_ui:
-		print("Calling show_victory()")  # Delete!
 		game_won_ui.show_victory()
-	else:
-		print("ERROR: game_won_ui is null!")  # Delete!
-		
+	
 	get_tree().paused = true
 
 func restart_game():
