@@ -109,6 +109,7 @@ func restart_game():
 	emit_signal("game_restarted")
 	
 	# Reload the current scene
+	
 	get_tree().reload_current_scene()
 	
 	# Reconnect after reload

@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://cuoo2kfn5s741"]
+[gd_scene load_steps=2 format=3 uid="uid://cuoo2kfn5s741"]
+
+[ext_resource type="Script" uid="uid://bpc11um8s4875" path="res://scenes/ui/victory_screen.gd" id="1_dtet5"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -7,13 +9,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_dtet5")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 564.0
-offset_top = 206.0
-offset_right = 629.0
-offset_bottom = 338.0
+offset_left = 454.0
+offset_top = 154.0
+offset_right = 685.0
+offset_bottom = 400.0
 
 [node name="Panel" type="Panel" parent="VBoxContainer"]
 modulate = Color(1, 1, 1, 0.5529412)
@@ -21,6 +24,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.73224384, 0, 0.04498285, 1)
+theme_override_font_sizes/font_size = 100
 text = "WIN!"
 
 [node name="RestartButton" type="Button" parent="VBoxContainer"]
