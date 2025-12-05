@@ -12,7 +12,7 @@ var game_over_ui : CanvasLayer = null
 var game_won_ui : Control = null
 
 #change this to the goal needed to win
-@export var win_threshold: int = 5
+@export var win_threshold: int = 15
 
 @export var main_menu_path : String = "res://scenes/ui/main_menu.tscn"
 @export var game_scene_path : String = "res://main.tscn"
