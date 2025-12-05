@@ -138,17 +138,23 @@ func _physics_process(delta: float) -> void:
 			
 	var is_trying_to_sprint = can_sprint and Input.is_action_pressed(input_sprint)
 	var is_moving = Input.get_vector(input_left, input_right, input_forward, input_back).length() > 0		
-	var can_actually_sprint = is_trying_to_sprint and current_endurance > min_endurance_to_sprint and is_moving
+	var can_actually_sprint = is_trying_to_sprint and current_endurance > 0 and is_moving	
 	
 	if can_actually_sprint:
 		move_speed = sprint_speed
 		current_endurance -= endurance_drain_rate * delta
 		current_endurance = max(0, current_endurance)
 		
+		print("Sprinting! Endurance: ", current_endurance)  # DEBUG
+		
 		if current_endurance <= 0 and not is_out_of_breath:
 			is_out_of_breath = true
+			print("OUT OF BREATH!")  # DEBUG
 			if breathing_player:
+				print("Breathing player exists, attempting to play...")  # DEBUG
 				breathing_player.play()
+			else:
+				print("ERROR: breathing_player is NULL!")  # DEBUG
 	else:
 		move_speed = base_speed
 		current_endurance += endurance_recovery_rate * delta
