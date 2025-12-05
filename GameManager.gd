@@ -3,17 +3,21 @@ extends Node
 
 signal game_over
 signal game_restarted
+signal game_won
 
-enum GameState { MENU, PLAYING, PAUSED, GAME_OVER }
+enum GameState { MENU, PLAYING, PAUSED, GAME_OVER, VICTORY }
 
 var current_state : GameState = GameState.MENU
 var game_over_ui : CanvasLayer = null
+var game_won_ui : Control = null
 
-# Global Knuckles counter
-var knuckles = 0
+#change this to the goal needed to win
+@export var win_threshold: int = 15
 
 @export var main_menu_path : String = "res://scenes/ui/main_menu.tscn"
 @export var game_scene_path : String = "res://main.tscn"
+
+
 
 func _ready():
 	# Wait for scene to be ready
@@ -25,6 +29,8 @@ func _ready():
 		current_state = GameState.PLAYING
 		connect_to_enemies()
 		setup_game_over_ui()
+		setup_game_won_ui()
+		DestructionManager.destruction_count_changed.connect(_on_destruction_count_changed)
 
 func connect_to_enemies():
 	var enemies = get_tree().get_nodes_in_group("Enemy")
@@ -37,7 +43,6 @@ func connect_to_enemies():
 				print("Connected to enemy signal: ", enemy.name)
 
 func setup_game_over_ui():
-	# Don't create duplicate UI
 	if game_over_ui != null:
 		return
 		
@@ -45,6 +50,24 @@ func setup_game_over_ui():
 	if ui_scene:
 		game_over_ui = ui_scene.instantiate()
 		get_tree().root.call_deferred("add_child", game_over_ui)
+		
+func setup_game_won_ui():
+	if game_won_ui != null:
+		return
+		
+	var ui_scene = load("res://scenes/ui/victory_screen.tscn")
+	
+	if ui_scene:
+		game_won_ui = ui_scene.instantiate()
+		get_tree().root.call_deferred("add_child", game_won_ui)
+		game_won_ui.hide()
+		
+		
+
+func _on_destruction_count_changed(count: int):
+	if count >= win_threshold and current_state == GameState.PLAYING:
+		trigger_victory()
+	
 
 func _on_player_caught():
 	print(">>> SIGNAL RECEIVED: player_caught <<<")
@@ -62,6 +85,16 @@ func trigger_game_over():
 		game_over_ui.show_game_over()
 	
 	get_tree().paused = true
+	
+func trigger_victory():
+	current_state = GameState.VICTORY
+	emit_signal("game_won")
+	await get_tree().create_timer(0.5).timeout
+
+	if game_won_ui:
+		game_won_ui.show_victory()
+	
+	get_tree().paused = true
 
 func restart_game():
 	print("Restarting game...")
@@ -72,10 +105,15 @@ func restart_game():
 	if game_over_ui:
 		game_over_ui.queue_free()
 		game_over_ui = null
+	if game_won_ui:
+		game_won_ui.queue_free()
+		game_won_ui = null
 	
+	DestructionManager.reset_count()
 	emit_signal("game_restarted")
 	
 	# Reload the current scene
+	
 	get_tree().reload_current_scene()
 	
 	# Reconnect after reload
@@ -83,6 +121,7 @@ func restart_game():
 	await get_tree().process_frame
 	connect_to_enemies()
 	setup_game_over_ui()
+	setup_game_won_ui()
 
 func go_to_main_menu():
 	print("Returning to main menu...")
@@ -93,9 +132,12 @@ func go_to_main_menu():
 	if game_over_ui:
 		game_over_ui.queue_free()
 		game_over_ui = null
+	if game_won_ui:
+		game_won_ui.queue_free()
+		game_won_ui = null
 	
 	get_tree().change_scene_to_file(main_menu_path)
-
+	
 func start_game():
 	print("Starting game from menu...")
 	current_state = GameState.PLAYING
@@ -105,11 +147,25 @@ func start_game():
 	await get_tree().process_frame
 	connect_to_enemies()
 	setup_game_over_ui()
+	setup_game_won_ui()
+	
+	DestructionManager.destruction_count_changed.connect(_on_destruction_count_changed)
 
 func pause_game():
 	if current_state == GameState.PLAYING:
 		current_state = GameState.PAUSED
 		get_tree().paused = true
+	
+	
+	
+	
+	
+#Delete this!!!!!		
+func _input(event):
+	# Press T to test victory manually
+	if event.is_action_pressed("ui_text_completion_accept") or Input.is_key_pressed(KEY_T):
+		print("Manual test: calling _on_destruction_count_changed(99)")
+		_on_destruction_count_changed(99)
 
 func resume_game():
 	if current_state == GameState.PAUSED:
@@ -121,3 +177,6 @@ func is_game_over() -> bool:
 
 func is_playing() -> bool:
 	return current_state == GameState.PLAYING
+	
+func is_game_won() -> bool:
+	return current_state == GameState.VICTORY
