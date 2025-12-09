@@ -9,7 +9,7 @@ metadata={
 "vram_texture": true
 }
 generator_parameters={
-"md5": "83570a9d3f5e6ddb8a922e22944e6c6e"
+"md5": "9ee5df7915d9f2cdcb5b2a3fec10d695"
 }
 
 [deps]
@@ -29,10 +29,6 @@ mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=8
 roughness/src_normal="res://Haru_547c6aa4a723dfff6f5ece4b508f7d75.jpg"
-process/channel_remap/red=0
-process/channel_remap/green=1
-process/channel_remap/blue=2
-process/channel_remap/alpha=3
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false

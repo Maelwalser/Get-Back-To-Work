@@ -9,7 +9,7 @@ metadata={
 "vram_texture": true
 }
 generator_parameters={
-"md5": "9b2b1c2af8b25109efec00154ccf4a76"
+"md5": "a8cc8f904cec5a87c6293c7184f061a9"
 }
 
 [deps]
@@ -22,8 +22,6 @@ dest_files=["res://.godot/imported/Moritz_db00d054a09f819ffcdde992c0f6fd13.jpg-9
 compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
-compress/uastc_level=0
-compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=1
 compress/channel_pack=0
@@ -31,10 +29,6 @@ mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=1
 roughness/src_normal="res://Moritz_db00d054a09f819ffcdde992c0f6fd13.jpg"
-process/channel_remap/red=0
-process/channel_remap/green=1
-process/channel_remap/blue=2
-process/channel_remap/alpha=3
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false
