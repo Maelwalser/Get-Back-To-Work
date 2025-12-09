@@ -57,6 +57,7 @@ var search_path_extended : bool = false
 @onready var vision_area : Area3D = $Area3D
 @onready var vision_collision : CollisionShape3D = $Area3D/CollisionShape3D
 @onready var vision_visual : MeshInstance3D
+@onready var hit_player_sound: AudioStreamPlayer3D = $HitPlayerSound
 
 func _ready():
 	# Vision Setup
@@ -158,6 +159,10 @@ func process_chase_state(delta):
 	
 	# If close enough horizontally AND within vertical tolerance
 	if horizontal_dist <= attack_distance and vertical_dist <= attack_vertical_range:
+		
+		if hit_player_sound:
+			hit_player_sound.play()
+		
 		emit_signal("player_caught")
 		agent.target_position = global_position 
 		return
