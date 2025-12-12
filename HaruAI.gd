@@ -77,7 +77,7 @@ func _ready():
 		agent.avoidance_enabled = true
 		agent.max_speed = run_speed
 		agent.velocity_computed.connect(_on_velocity_computed)
-		agent.debug_enabled = true
+		agent.debug_enabled = false
 		
 
 		print("Haru Agent Ready.")
