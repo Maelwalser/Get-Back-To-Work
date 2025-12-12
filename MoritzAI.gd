@@ -15,9 +15,6 @@ signal player_caught
 @export_group("Vision")
 @export var vision_range : float = 13.0
 @export var vision_angle : float = 70.0
-@export var show_vision_area : bool = true
-@export var vision_color_chase : Color = Color(1.0, 1.0, 0.0, 0.4)
-@export var vision_color_patrol : Color = Color(1.0, 0.0, 0.0, 0.4)
 
 @export_group("AI Parameters")
 @export var patrol_path : Path3D
@@ -52,22 +49,17 @@ var investigation_time : float = 0.0
 @onready var gravity : float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var player = get_tree().get_nodes_in_group("Player")[0] if get_tree().get_nodes_in_group("Player").size() > 0 else null
 @onready var vision_area : Area3D = $Area3D
-@onready var vision_collision : CollisionShape3D = $Area3D/CollisionShape3D
-@onready var vision_visual : MeshInstance3D
 @onready var footstep_player: AudioStreamPlayer3D = $FootStepPlayer
-
 
 
 func _ready():
 	if vision_area:
 		vision_area.body_entered.connect(_on_body_entered)
 		vision_area.body_exited.connect(_on_body_exited)
-	if show_vision_area and vision_collision:
-		create_vision_visual_from_collision()
 		
 	if agent:
 		agent.path_desired_distance = 1.0
-		agent.target_desired_distance = attack_distance
+		agent.target_desired_distance = 0.5
 		agent.path_max_distance = 1.0
 		agent.radius = 3.0
 		agent.avoidance_enabled = true
@@ -112,8 +104,6 @@ func _process(delta):
 			process_patrol_state(delta)
 		State.INVESTIGATE:
 			process_investigate_state(delta)
-
-	update_vision_visual()
 
 # STATE LOGIC
 
@@ -349,46 +339,6 @@ func find_closest_patrol_point():
 			
 	current_patrol_index = closest_index
 
-# VISUAL DEBUG
-
-func update_vision_visual():
-	if not vision_visual or not vision_visual.material_override: return
-	
-	if current_state == State.CHASE:
-		vision_visual.material_override.albedo_color = vision_color_chase # Yellow/Red
-	elif current_state == State.SEARCH:
-		vision_visual.material_override.albedo_color = Color(1.0, 0.5, 0.0, 0.2) # Orange
-	elif current_state == State.INVESTIGATE:  # NEW
-		vision_visual.material_override.albedo_color = Color(1.0, 0.0, 1.0, 0.3)
-	else:
-		vision_visual.material_override.albedo_color = vision_color_patrol # Red/Green
-
-
-func create_vision_visual_from_collision():
-	vision_visual = MeshInstance3D.new()
-	vision_collision.add_child(vision_visual)
-	var shape = vision_collision.shape
-	var cylinder_mesh = CylinderMesh.new()
-	cylinder_mesh.top_radius = vision_range * tan(deg_to_rad(vision_angle)) # Approx visualization
-	cylinder_mesh.bottom_radius = 0.1
-	cylinder_mesh.height = vision_range
-	
-	if shape is SphereShape3D:
-		var sphere_mesh = SphereMesh.new(); sphere_mesh.radius = shape.radius; sphere_mesh.height = shape.radius * 2; vision_visual.mesh = sphere_mesh
-	elif shape is BoxShape3D:
-		var box_mesh = BoxMesh.new(); box_mesh.size = shape.size; vision_visual.mesh = box_mesh
-	elif shape is CylinderShape3D: # Cone approximations usually used here
-		var cyl = CylinderMesh.new(); cyl.height = shape.height; cyl.top_radius = shape.radius; cyl.bottom_radius = shape.radius; vision_visual.mesh = cyl
-	elif shape is CapsuleShape3D:
-		var cap = CapsuleMesh.new(); cap.radius = shape.radius; cap.height = shape.height; vision_visual.mesh = cap
-
-	var material = StandardMaterial3D.new()
-	material.albedo_color = vision_color_patrol
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	vision_visual.material_override = material
-	
 # Empty signals required for Area3D connection
 func _on_body_entered(body): pass 
 func _on_body_exited(body): pass

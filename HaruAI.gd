@@ -16,10 +16,6 @@ signal player_caught
 @export_group("Vision")
 @export var vision_range : float = 13.0
 @export var vision_angle : float = 70.0
-@export var show_vision_area : bool = true
-
-@export var vision_color_chase : Color = Color(1.0, 0.5, 0.0, 0.4) 
-@export var vision_color_patrol : Color = Color(0.0, 0.0, 1.0, 0.4)
 
 @export_group("AI Parameters")
 @export var patrol_path : Path3D
@@ -55,8 +51,6 @@ var search_path_extended : bool = false
 
 @onready var footstep_player: AudioStreamPlayer3D = $FootStepPlayer
 @onready var vision_area : Area3D = $Area3D
-@onready var vision_collision : CollisionShape3D = $Area3D/CollisionShape3D
-@onready var vision_visual : MeshInstance3D
 @onready var hit_player_sound: AudioStreamPlayer3D = $HitPlayerSound
 
 func _ready():
@@ -65,13 +59,10 @@ func _ready():
 		vision_area.body_entered.connect(_on_body_entered)
 		vision_area.body_exited.connect(_on_body_exited)
 	
-	if show_vision_area and vision_collision:
-		create_vision_visual_from_collision()
-		
 	# Navigation Setup
 	if agent:
 		agent.path_desired_distance = 1.0
-		agent.target_desired_distance = attack_distance
+		agent.target_desired_distance = 0.5
 		agent.path_max_distance = 1.0
 		agent.radius = 3.0 
 		agent.avoidance_enabled = true
@@ -120,7 +111,6 @@ func _process(delta):
 		State.INVESTIGATE: 
 			process_investigate_state(delta)
 
-	update_vision_visual()
 
 # STATE LOGIC
 
@@ -355,41 +345,6 @@ func find_closest_patrol_point():
 			
 	current_patrol_index = closest_index
 
-# VISUAL DEBUG
-
-func update_vision_visual():
-	if not vision_visual or not vision_visual.material_override: return
-	
-	if current_state == State.CHASE:
-		vision_visual.material_override.albedo_color = vision_color_chase
-	elif current_state == State.SEARCH:
-		vision_visual.material_override.albedo_color = Color(1.0, 1.0, 0.0, 0.2) 
-	elif current_state == State.INVESTIGATE:  
-		vision_visual.material_override.albedo_color = Color(1.0, 0.0, 1.0, 0.3)
-	else:
-		vision_visual.material_override.albedo_color = vision_color_patrol
-
-func create_vision_visual_from_collision():
-	vision_visual = MeshInstance3D.new()
-	vision_collision.add_child(vision_visual)
-	var shape = vision_collision.shape
-	
-	# Recreate mesh based on shape
-	if shape is SphereShape3D:
-		var m = SphereMesh.new(); m.radius = shape.radius; m.height = shape.radius * 2; vision_visual.mesh = m
-	elif shape is BoxShape3D:
-		var m = BoxMesh.new(); m.size = shape.size; vision_visual.mesh = m
-	elif shape is CylinderShape3D:
-		var m = CylinderMesh.new(); m.height = shape.height; m.top_radius = shape.radius; m.bottom_radius = shape.radius; vision_visual.mesh = m
-	elif shape is CapsuleShape3D:
-		var m = CapsuleMesh.new(); m.radius = shape.radius; m.height = shape.height; vision_visual.mesh = m
-	
-	var material = StandardMaterial3D.new()
-	material.albedo_color = vision_color_patrol
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	vision_visual.material_override = material
 
 # Signals for Area3D 
 func _on_body_entered(body): pass
